@@ -1,4 +1,4 @@
-configure_file(../include/msdfgl.h.in msdfgl.h @ONLY)
+configure_file(../include/msdfgl.h msdfgl.h @ONLY)
 
 # Finds all .glsl shaders in our source directory.
 file(GLOB_RECURSE msdfgl_shaders ${CMAKE_CURRENT_SOURCE_DIR}/*.glsl)

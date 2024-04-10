@@ -143,6 +143,7 @@ struct _msdfgl_context {
     GLint point_data_uniform;
 
     GLuint render_shader;
+    GLboolean user_shader;
 
     GLint window_projection_uniform;
     GLint _font_atlas_projection_uniform;
@@ -215,7 +216,7 @@ int compile_shader(const char *source, GLenum type, GLuint *shader, const char *
     return 1;
 }
 
-msdfgl_context_t msdfgl_create_context(const char *version) {
+msdfgl_context_t msdfgl_create_context(const char *version, const GLuint user_shader) {
     msdfgl_context_t ctx = (msdfgl_context_t)calloc(1, sizeof(struct _msdfgl_context));
 
 /*
@@ -241,7 +242,7 @@ msdfgl_context_t msdfgl_create_context(const char *version) {
         return NULL;
     if (!compile_shader(_msdf_fragment, GL_FRAGMENT_SHADER, &fragment_shader, version))
         return NULL;
-
+	    
     if (!(ctx->gen_shader = glCreateProgram()))
         return NULL;
 
@@ -279,29 +280,38 @@ msdfgl_context_t msdfgl_create_context(const char *version) {
         return NULL;
     }
 
-    if (!compile_shader(_font_vertex, GL_VERTEX_SHADER, &vertex_shader, version))
-        return NULL;
-    if (!compile_shader(_font_geometry, GL_GEOMETRY_SHADER, &geometry_shader, version))
-        return NULL;
-    if (!compile_shader(_font_fragment, GL_FRAGMENT_SHADER, &fragment_shader, version))
-        return NULL;
+    ctx->user_shader = user_shader != 0;
 
-    if (!(ctx->render_shader = glCreateProgram()))
-        return NULL;
-    glAttachShader(ctx->render_shader, vertex_shader);
-    glAttachShader(ctx->render_shader, geometry_shader);
-    glAttachShader(ctx->render_shader, fragment_shader);
+    if (!ctx->user_shader)
+    {
+	    if (!compile_shader(_font_vertex, GL_VERTEX_SHADER, &vertex_shader, version))
+	        return NULL;
+	    if (!compile_shader(_font_geometry, GL_GEOMETRY_SHADER, &geometry_shader, version))
+	        return NULL;
+	    if (!compile_shader(_font_fragment, GL_FRAGMENT_SHADER, &fragment_shader, version))
+	        return NULL;
 
-    glLinkProgram(ctx->render_shader);
-    glDeleteShader(vertex_shader);
-    glDeleteShader(geometry_shader);
-    glDeleteShader(fragment_shader);
+	    if (!(ctx->render_shader = glCreateProgram()))
+	        return NULL;
+	    glAttachShader(ctx->render_shader, vertex_shader);
+	    glAttachShader(ctx->render_shader, geometry_shader);
+	    glAttachShader(ctx->render_shader, fragment_shader);
 
-    glGetProgramiv(ctx->render_shader, GL_LINK_STATUS, &status);
+	    glLinkProgram(ctx->render_shader);
+	    glDeleteShader(vertex_shader);
+	    glDeleteShader(geometry_shader);
+	    glDeleteShader(fragment_shader);
 
-    if (!status) {
-        glDeleteProgram(ctx->gen_shader);
-        return NULL;
+	    glGetProgramiv(ctx->render_shader, GL_LINK_STATUS, &status);
+
+	    if (!status) {
+	        glDeleteProgram(ctx->gen_shader);
+	        return NULL;
+	    }
+    }
+    else
+    {
+	    ctx->render_shader = user_shader;
     }
 
     ctx->window_projection_uniform =
@@ -320,7 +330,7 @@ msdfgl_context_t msdfgl_create_context(const char *version) {
     if ((err = glGetError())) {
         fprintf(stderr, "error: %x \n", err);
         glDeleteProgram(ctx->gen_shader);
-        glDeleteProgram(ctx->render_shader);
+        if (!ctx->user_shader) glDeleteProgram(ctx->render_shader);
         return NULL;
     }
 
@@ -343,7 +353,8 @@ void msdfgl_destroy_context(msdfgl_context_t ctx) {
     FT_Done_FreeType(ctx->ft_library);
 
     glDeleteProgram(ctx->gen_shader);
-    glDeleteProgram(ctx->render_shader);
+    // maybe the shader used in other context so don't delete if it is a user shader
+    if (!ctx->user_shader) glDeleteProgram(ctx->render_shader);
 
     glDeleteVertexArrays(1, &ctx->bbox_vao);
     glDeleteBuffers(1, &ctx->bbox_vbo);
