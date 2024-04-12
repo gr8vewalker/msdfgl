@@ -1,9 +1,3 @@
-workspace "msdfgl"
-   architecture "x64"
-   configurations { "Debug", "Release", "Dist" }
-
-outputdir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
-
 project "freetype"
 	location "freetype"
 	kind "StaticLib"
