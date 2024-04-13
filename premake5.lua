@@ -89,11 +89,11 @@ project "msdfgl"
    kind "StaticLib"
    language "C"
    staticruntime "off"
-   
+
    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-   
-   files { 
+
+   files {
       "include/msdfgl.h",
       "include/_msdfgl_shaders.h",
       "src/msdfgl.c",
@@ -102,25 +102,24 @@ project "msdfgl"
       "src/msdfgl_serializer.c",
       "src/msdfgl_serializer.h",
    }
-   
-   includedirs 
+
+   includedirs
    {
-      "src",
 	  "include",
       "freetype/include",
       "vendor/glad/include"
    }
-   
+
    links
    {
 	  "freetype"
    }
-   
-   defines 
+
+   defines
    {
       "MSDFGL_STATIC_DEFINE"
    }
-	
+
    filter "configurations:Debug"
       runtime "Debug"
       symbols "on"
@@ -128,7 +127,7 @@ project "msdfgl"
    filter "configurations:Release"
       runtime "Release"
       optimize "on"
-	  
+
    filter "configurations:Dist"
       runtime "Release"
       optimize "on"
