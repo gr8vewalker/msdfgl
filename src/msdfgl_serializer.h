@@ -2,7 +2,8 @@
 #ifndef MSDFGL_SERIALIZER_H
 #define MSDFGL_SERIALIZER_H
 
-#include "msdfgl.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #define SERIALIZER_SCALE 64.0f
 

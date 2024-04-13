@@ -49,6 +49,7 @@ project "freetype"
 		"freetype/src/psnames/psnames.c",
 		"freetype/src/raster/raster.c",
 		"freetype/src/sdf/sdf.c",
+		"freetype/src/svg/svg.c",
 		"freetype/src/sfnt/sfnt.c",
 		"freetype/src/smooth/smooth.c",
 		"freetype/src/truetype/truetype.c",
